@@ -1,0 +1,178 @@
+Төмендегі кодтың «Көшіру» батырмасын басыңыз. GitHub-тағы бос жолға қойып, Commit басыңыз.
+
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Туған күніңізбен! Шар ойыны</title>
+<style>
+:root{--bg:#FFF3E0;--fg:#1F2A5A;--card:#FFFFFF;--accent:#E8503A;--gold:#F2A900;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1F2A5A;--fg:#F6EBD9;--card:#2B3873;--accent:#FF6B57;--gold:#FFC53D}}
+:root[data-theme="dark"]{--bg:#1F2A5A;--fg:#F6EBD9;--card:#2B3873;--accent:#FF6B57;--gold:#FFC53D}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:'Noto Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#app{height:100%;display:flex;flex-direction:column}
+.screen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:14px;min-height:0}
+.screen.on{display:flex}
+h1{font-family:'Noto Serif',Georgia,serif;font-size:clamp(30px,8vw,56px);margin:0;line-height:1.1}
+p{margin:0;font-size:clamp(17px,4.5vw,21px);line-height:1.45;max-width:460px}
+input{font:inherit;font-size:20px;padding:12px 16px;border-radius:12px;border:2px solid var(--fg);background:var(--card);color:var(--fg);width:min(320px,100%);text-align:center}
+button{font:inherit;font-size:20px;font-weight:600;min-height:48px;padding:12px 32px;border:0;border-radius:999px;background:var(--accent);color:#1A1A1A;cursor:pointer}
+button:active{transform:scale(.97)}
+#hud{display:flex;justify-content:space-between;padding:14px 20px 8px;font-size:19px;font-weight:600}
+#bar{height:10px;margin:0 20px;border-radius:5px;background:var(--card);overflow:hidden}
+#fill{height:100%;width:0;background:var(--gold);transition:width .2s}
+#arena{flex:1;position:relative;overflow:hidden;margin-top:8px}
+.b{position:absolute;bottom:-140px;border-radius:50% 50% 48% 48%;animation:rise var(--d) linear forwards;cursor:pointer}
+.b::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:40px;background:var(--fg);opacity:.5}
+.b.pop{animation:none;transition:opacity .2s,scale .2s;scale:1.6;opacity:0;pointer-events:none}
+@keyframes rise{to{transform:translateY(calc(-1 * var(--h)))}}
+.tip{position:absolute;max-width:240px;padding:8px 12px;border-radius:12px;background:var(--card);color:var(--fg);font-size:16px;font-weight:500;text-align:center;pointer-events:none;animation:tip 2.2s ease-out forwards;z-index:5}
+@keyframes tip{0%{opacity:0;transform:translateY(10px)}15%{opacity:1}100%{opacity:0;transform:translateY(-70px)}}
+.c{position:fixed;top:-20px;width:10px;height:16px;animation:fall var(--d) linear forwards;pointer-events:none;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+#cake{display:flex;flex-direction:column;align-items:center}
+#cake>div{border-radius:12px 12px 0 0}
+#candles{display:flex;gap:28px;align-items:flex-end}
+.can{display:flex;flex-direction:column;align-items:center}
+.fl{width:48px;height:56px;padding:0;min-height:0;background:none;display:flex;align-items:flex-end;justify-content:center}
+.fl i{display:block;width:22px;height:34px;border-radius:50% 50% 50% 50%/65% 65% 35% 35%;background:var(--gold);box-shadow:0 0 16px 6px var(--gold);animation:fk .4s infinite alternate}
+.fl.out i{display:none}
+@keyframes fk{to{transform:scale(1.1,.92)}}
+.can b{display:block;width:12px;height:36px;background:var(--fg);border-radius:4px}
+#list{list-style:none;margin:0;padding:0;max-height:26vh;overflow-y:auto;max-width:460px;width:100%;font-size:16px;line-height:1.5;text-align:left}
+#list li{padding:4px 0}
+</style>
+</head>
+<body>
+<div id="app">
+<section id="s1" class="screen on">
+<h1>Туған күн ойыны</h1>
+<p>Шарларды басып жарыңыз! Әр шардың ішінде сізге арналған тілек жасырылған. Сұр шарды екі рет басу керек, алтын шар үш ұпай береді.</p>
+<input id="name" type="text" maxlength="24" placeholder="Есіміңіз (мысалы, Айгүл)" aria-label="Есіміңіз">
+<button id="go">Бастау</button>
+</section>
+<section id="s2" class="screen" style="padding:0;justify-content:flex-start;align-items:stretch">
+<div id="hud"><span id="sc"></span><span id="cb"></span></div>
+<div id="bar"><div id="fill"></div></div>
+<div id="arena"></div>
+</section>
+<section id="s3" class="screen">
+<h1>Дұға жасайық</h1>
+<p>Аллаһтан тілеңіз: әр дұғадан кейін «Әумин» деңіз.</p>
+<div id="dua" style="background:var(--card);padding:22px;border-radius:16px;font-family:'Noto Serif',Georgia,serif;font-size:clamp(20px,5.2vw,26px);line-height:1.45;max-width:460px;width:100%;min-height:150px;display:flex;align-items:center;justify-content:center"></div>
+<span id="dn" style="font-weight:600"></span>
+<button id="amin">Әумин</button>
+</section>
+<section id="s4" class="screen">
+<h1 id="win"></h1>
+<p>Жиналған тілектер сізге арналады:</p>
+<ul id="list"></ul>
+<button id="again">Қайта ойнау</button>
+</section>
+</div>
+<script>
+(function(){
+var GOAL=40,score=0,timer=null,name='',combo=0,last=0,got=[],pool=[];
+var di=0,D=['Аллаһ Тағала сізге зор денсаулық пен ұзақ ғұмыр берсін!','Аллаһым, үйіңіздің берекесін, отбасыңыздың бірлігін арттыра берсін!','Аллаһ тілегіңізді қабыл етіп, армандарыңызды орындасын!','Иманыңыз бен бақытыңыз берік болсын, жолыңыз ашық болсын!'];
+var cols=['#E8503A','#F2A900','#2FA88F','#4C7BE0','#C94FA0'];
+var W=['Денсаулығыңыз мықты болсын!','Үйіңіздің берекесі кетпесін!','Жүзіңізден күлкі кетпесін!','Көңіліңіз әрдайым көтеріңкі болсын!','Әрбір күніңіз қуанышқа толсын!','Жақындарыңыз әрдайым қасыңызда болсын!','Армандарыңыз орындалсын!','Дастарханыңыз мол болсын!','Жолыңыз ашық болсын!','Бақытыңыз бен табысыңыз еселене берсін!','Немерелеріңіздің қуанышын көріңіз!','Шаттыққа толы жылдар тілеймін!'];
+var $=function(i){return document.getElementById(i)};
+var arena=$('arena');
+function show(id){['s1','s2','s3','s4'].forEach(function(s){$(s).classList.toggle('on',s===id)})}
+function wish(){
+  if(!pool.length)pool=W.slice();
+  return pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+}
+function spawn(){
+  var p=score/GOAL,gold=Math.random()<0.12;
+  var tough=!gold&&score>4&&Math.random()<0.25,w=gold?56:46+Math.random()*34,h=w*1.25;
+  var b=document.createElement('div');
+  b.className='b';
+  b.style.width=w+'px';b.style.height=h+'px';
+  b.style.left=Math.random()*(arena.clientWidth-w)+'px';
+  b.style.background=gold?'#F2A900':tough?'#5B6477':cols[Math.floor(Math.random()*cols.length)];
+  if(tough)b.style.border='3px solid #1F2A5A';
+  if(gold)b.style.boxShadow='0 0 18px 4px #F2A900';
+  b.style.setProperty('--h',(arena.clientHeight+200)+'px');
+  b.style.setProperty('--d',(gold?3.2:4.6-p*1.8+Math.random())+'s');
+  b.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    if(b.classList.contains('pop'))return;
+    if(tough&&!b.dataset.h){b.dataset.h=1;b.style.opacity='.55';return}
+    var r=b.getBoundingClientRect(),ar=arena.getBoundingClientRect();
+    b.style.transform='translateY('+(r.bottom-(ar.bottom+140))+'px)';
+    b.classList.add('pop');
+    hit(gold,r.left-ar.left,r.top-ar.top);
+    setTimeout(function(){b.remove()},250);
+  });
+  b.addEventListener('animationend',function(){b.remove()});
+  arena.appendChild(b);
+}
+function hit(gold,x,y){
+  var now=Date.now();
+  combo=(now-last<1300)?combo+1:1;last=now;
+  var v=gold?3:1;
+  var t=wish();got.push(t);
+  var d=document.createElement('div');
+  d.className='tip';d.textContent=(gold?'Алтын шар! ':'')+t;
+  d.style.left=Math.max(6,Math.min(x-60,arena.clientWidth-250))+'px';
+  d.style.top=Math.max(10,y)+'px';
+  arena.appendChild(d);
+  setTimeout(function(){d.remove()},2300);
+  if(gold)confetti(25);
+  score=Math.min(GOAL,score+v);
+  $('sc').textContent='Шар: '+score+' / '+GOAL;
+  $('cb').textContent=combo>1?'Қатарынан: '+combo:'';
+  $('fill').style.width=(score/GOAL*100)+'%';
+  clearInterval(timer);
+  if(score>=GOAL){candles();return}
+  timer=setInterval(spawn,520-score/GOAL*200);
+}
+function confetti(n){
+  for(var i=0;i<n;i++){
+    var c=document.createElement('div');
+    c.className='c';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=cols[i%cols.length];
+    c.style.setProperty('--d',(2.5+Math.random()*3)+'s');
+    c.style.animationDelay=Math.random()*1.2+'s';
+    document.body.appendChild(c);
+    setTimeout(function(el){el.remove()},7500,c);
+  }
+}
+function candles(){
+  arena.innerHTML='';di=0;showDua();show('s3');
+}
+function showDua(){
+  $('dua').textContent=D[di];
+  $('dn').textContent=(di+1)+' / '+D.length;
+}
+function finish(){
+  $('win').textContent='Туған күніңізбен, '+(name||'апа')+'!';
+  var ul=$('list');ul.innerHTML='';
+  got.slice(0,12).forEach(function(t){var li=document.createElement('li');li.textContent='★ '+t;ul.appendChild(li)});
+  show('s4');
+  confetti(80);
+}
+function start(){
+  name=$('name').value.trim();
+  score=0;combo=0;got=[];pool=[];
+  $('sc').textContent='Шар: 0 / '+GOAL;
+  $('cb').textContent='';
+  $('fill').style.width='0';
+  arena.innerHTML='';
+  show('s2');
+  clearInterval(timer);
+  spawn();
+  timer=setInterval(spawn,520);
+}
+$('go').addEventListener('click',start);
+$('amin').addEventListener('click',function(){di++;confetti(12);if(di>=D.length)finish();else showDua()});
+$('again').addEventListener('click',start);
+})();
+</script>
+</body>
+</html>
